@@ -1,0 +1,121 @@
+import java.util.ArrayList;
+import java.util.Map.Entry;
+
+abstract public class Adapter {
+    protected ArrayList<ArrayList<String>> values;
+    protected ArrayList<String> keys;
+    protected String tableName;
+
+    public ArrayList<ArrayList<String>> getValues() {
+        return this.values;
+    }
+
+    public ArrayList<String> getKeys() {
+        return this.keys;
+    }
+
+    public String getTableName() {
+        return this.tableName;
+    }
+}
+
+class InvoiceAdapter extends Adapter {
+    InvoiceAdapter(Invoice invoice) {
+        super();
+        this.tableName = "Invoice";
+        this.keys = new ArrayList<String>();
+        String error = invoice.getError();
+        boolean isError = error.length() > 0;
+        String total = String.valueOf(invoice.getTotal());
+
+        this.keys.add("Name");
+        this.keys.add("Quantity");
+        this.keys.add("Price");
+        this.keys.add("CardNumber");
+        this.keys.add(isError ? "Error" : "Total");
+
+        this.values = new ArrayList<ArrayList<String>>();
+
+        this.values.add(this.keys);
+        for (Item i : invoice.getItems()) {
+            ArrayList<String> row = new ArrayList<String>();
+            row.add(i.getName());
+            row.add(String.valueOf(i.getQuantity()));
+            row.add(String.valueOf(i.getPrice()));
+            row.add(this.values.size() == 1 ? invoice.getCardNumber() : "");
+            row.add(this.values.size() == 1 ? (isError ? error : total) : "");
+            this.values.add(row);
+        }
+    }
+}
+
+class InvoiceAdapterInitial extends Adapter {
+    InvoiceAdapterInitial(Invoice invoice) {
+        super();
+        this.tableName = "Requested Items";
+        this.keys = new ArrayList<String>();
+        String error = invoice.getError();
+        boolean isError = error.length() > 0;
+
+        this.keys.add("Name");
+        this.keys.add("Quantity");
+        this.keys.add("CardNumber");
+        if (isError)
+            this.keys.add("Error");
+
+        this.values = new ArrayList<ArrayList<String>>();
+        this.values.add(this.keys);
+        new ArrayList<ArrayList<String>>();
+        for (Entry<String, Integer> entry : invoice.getInitialItems().entrySet()) {
+            ArrayList<String> row = new ArrayList<String>();
+            row.add(entry.getKey());
+            row.add(String.valueOf(entry.getValue()));
+            row.add(this.values.size() == 1 ? invoice.getCardNumber() : "");
+            if (isError)
+                row.add(this.values.size() == 1 ? error : "");
+            this.values.add(row);
+        }
+    }
+}
+
+class CardRepositoryAdapter extends Adapter {
+    CardRepositoryAdapter(CardRepository cardRepository) {
+        super();
+        this.tableName = "Registered Cards";
+        this.keys = new ArrayList<String>();
+
+        this.keys.add("CardNumber");
+
+        this.values = new ArrayList<ArrayList<String>>();
+        this.values.add(this.keys);
+        for (String i : cardRepository.getCards().toArray(new String[1])) {
+            ArrayList<String> row = new ArrayList<String>();
+            row.add(i);
+            this.values.add(row);
+        }
+    }
+}
+
+class InventoryAdapter extends Adapter {
+    InventoryAdapter(Inventory inventory) {
+        super();
+        this.tableName = "Available Inventory";
+        this.keys = new ArrayList<String>();
+
+        this.keys.add("Name");
+        this.keys.add("Type");
+        this.keys.add("Quantity");
+        this.keys.add("Price");
+
+        this.values = new ArrayList<ArrayList<String>>();
+        this.values.add(this.keys);
+        for (Item i : inventory.getItems().values()) {
+            ArrayList<String> row = new ArrayList<String>();
+            row.add(i.getName());
+            row.add(String.valueOf(i.getType()));
+            row.add(String.valueOf(i.getQuantity()));
+            row.add(String.valueOf(i.getPrice()));
+            this.values.add(row);
+        }
+    }
+}
